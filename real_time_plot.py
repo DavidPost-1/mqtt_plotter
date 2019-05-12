@@ -29,8 +29,21 @@ class gui(qt.QWidget):
             '''
             Callback function to run after connecting to an MQTT server.'''
             print("Connected with result code "+str(rc))
+
+            # Subscribe
             print(self.input_mqtttopic.text())
             client.subscribe(self.input_mqtttopic.text())
+
+            # Buttons etc
+            self.button_connect.clicked.disconnect()
+            self.button_connect.clicked.connect(self.disconnect)
+            self.button_connect.setText("Disconnect")
+
+            self.input_mqttport.setEnabled(False)
+            self.input_mqttserver.setEnabled(False)
+            self.input_mqtttopic.setEnabled(False)
+
+
 
         def on_message(client, userdata, msg):
             '''
@@ -41,9 +54,26 @@ class gui(qt.QWidget):
             #print(self.data)
             self.update_plot(float(msg.payload))
 
+
+        def on_disconnect(client, userdata, rc):
+            if rc != 0:
+                print("Unexpected disconnection")
+            else:
+                print("Disconnected")
+
+            self.button_connect.clicked.disconnect()
+            self.button_connect.clicked.connect(self.connect)
+            self.button_connect.setText("Connect")
+
+            self.input_mqttport.setEnabled(True)
+            self.input_mqttserver.setEnabled(True)
+            self.input_mqtttopic.setEnabled(True)
+
+
         self.client = mqtt.Client()
         self.client.on_connect = on_connect
         self.client.on_message = on_message
+        self.client.on_disconnect = on_disconnect
         self.button_connect.clicked.connect(self.connect)
         self.button_save.clicked.connect(self.save_chart_data)
         self.button_clear.clicked.connect(self.clear_chart)
@@ -111,26 +141,12 @@ class gui(qt.QWidget):
         self.client.connect(self.input_mqttserver.text(),
                             int(self.input_mqttport.text()), 60)
         self.client.loop_start()
-        self.button_connect.clicked.disconnect()
-        self.button_connect.clicked.connect(self.disconnect)
-        self.button_connect.setText("Disconnect")
 
-        self.input_mqttport.setEnabled(False)
-        self.input_mqttserver.setEnabled(False)
-        self.input_mqtttopic.setEnabled(False)
 
     def disconnect(self):
         self.client.loop_stop()
-        self.client.unsubscribe("testing")
+        self.client.unsubscribe(self.input_mqtttopic.text())
         self.client.disconnect()
-        print("Disconnected")
-        self.button_connect.clicked.disconnect()
-        self.button_connect.clicked.connect(self.connect)
-        self.button_connect.setText("Connect")
-
-        self.input_mqttport.setEnabled(True)
-        self.input_mqttserver.setEnabled(True)
-        self.input_mqtttopic.setEnabled(True)
 
     def update_plot(self, data):
         '''
