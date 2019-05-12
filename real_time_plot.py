@@ -118,19 +118,25 @@ class gui(qt.QWidget):
         buttons.addStretch(1)
 
         # Make an initially blank matplotlib canvas and axis
+        chart_vbox = qt.QVBoxLayout()
         self.fig = Figure()
         self.static_canvas = FigureCanvas(self.fig)
+        self.toolbar = NavigationToolbar(self.static_canvas, self)
         self.ax = self.fig.add_subplot(111)
         # self.ax.plot(3, 'o')
         self.ax.grid()
         self.static_canvas.draw()
 
-        # Add the widgets to window layout
-        hbox.addWidget(self.static_canvas)
+        # Add the widgets to chart layout
+        chart_vbox.addWidget(self.static_canvas)
+        chart_vbox.addWidget(self.toolbar)
+
+        # Add the layouts to the main layout
+        hbox.addLayout(chart_vbox)
         hbox.addLayout(buttons)
 
         self.setLayout(hbox)
-        self.setGeometry(300, 300, 500, 250)
+        self.setGeometry(300, 300, 600, 350)
         self.setWindowTitle("MQTT Plotter")
         self.show()
 
