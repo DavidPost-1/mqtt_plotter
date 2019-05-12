@@ -140,8 +140,11 @@ class gui(qt.QWidget):
         # print("Got something")
         # print(data)
         self.data = np.append(self.data, data)
-        #print("Hello")
-        #print(self.data)
+
+        # Save a binary backup of the data array
+        np.save('data_backup', self.data)
+
+        # Clear the axis, re-draw the grid, plot the data and draw the canvas
         self.ax.clear()
         self.ax.grid()
         self.ax.plot(self.data)
